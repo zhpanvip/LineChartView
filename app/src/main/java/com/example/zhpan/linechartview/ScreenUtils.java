@@ -4,9 +4,7 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 
 /**
- *
  * ScreenUtils
- * @author  ssw
  */
 public class ScreenUtils {
     private static int screenW;

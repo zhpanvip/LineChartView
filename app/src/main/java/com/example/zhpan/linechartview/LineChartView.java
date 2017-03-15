@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by edianzu on 2017/3/14.
+ * Created by zhpan on 2017/3/14.
  */
 
 public class LineChartView extends View {
