@@ -195,7 +195,7 @@ public class LineChartView extends View {
                 }
             }
         }
-        // 画折线
+        //  设置动画
         PathMeasure measure = new PathMeasure(mPath, false);
         float pathLength = measure.getLength();
         PathEffect effect = new DashPathEffect(new float[]{pathLength,
@@ -208,6 +208,7 @@ public class LineChartView extends View {
                 Color.argb(100, 255, 86, 86), Color.argb(15, 255, 86, 86),
                 Color.argb(0, 255, 86, 86)}, null, Shader.TileMode.CLAMP);
         mPaintShader.setShader(mShader);
+
         //  画渐变阴影
         canvas.drawPath(mPathShader, mPaintShader);
     }

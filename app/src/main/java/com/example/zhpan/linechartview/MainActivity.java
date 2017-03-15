@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAnim() {
         ObjectAnimator anim = ObjectAnimator.ofFloat(mLineChartView, "percentage", 0.0f, 1.0f);
-        anim.setDuration(1000);
+        anim.setDuration(2000);
         anim.setInterpolator(new LinearInterpolator());
         anim.start();
     }
