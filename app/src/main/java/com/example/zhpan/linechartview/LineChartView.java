@@ -39,10 +39,10 @@ public class LineChartView extends View {
     private String startTime = "2017-03-15";
     private String endTime = "2017-03-24";
     private int timeWidth;  //  日期宽度
-    //  折线数据
-    private List<ItemBean> mItems;
-    //  渐变阴影颜色
-    private int[] shadeColors;
+
+    private List<ItemBean> mItems;//  折线数据
+
+    private int[] shadeColors; //  渐变阴影颜色
 
     private int mAxesColor; //  坐标轴颜色
     private float mAxesWidth; //  坐标轴宽度
@@ -161,7 +161,6 @@ public class LineChartView extends View {
         init();
     }
 
-
     public LineChartView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
         init();
@@ -172,9 +171,9 @@ public class LineChartView extends View {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.LineChartView);
         mAxesColor = typedArray.getColor(R.styleable.LineChartView_axesColor, Color.parseColor("#CCCCCC"));
         mAxesWidth = typedArray.getDimension(R.styleable.LineChartView_axesWidth, 1);
-        mTextColor = typedArray.getColor(R.styleable.LineChartView_textColorX, Color.parseColor("#ABABAB"));
-        mTextSize = typedArray.getDimension(R.styleable.LineChartView_textSizeX, 32);
-        mLineColor = typedArray.getColor(R.styleable.LineChartView_lineOneColor, Color.RED);
+        mTextColor = typedArray.getColor(R.styleable.LineChartView_textColor, Color.parseColor("#ABABAB"));
+        mTextSize = typedArray.getDimension(R.styleable.LineChartView_textSize, 32);
+        mLineColor = typedArray.getColor(R.styleable.LineChartView_lineColor, Color.RED);
         mBgColor = typedArray.getColor(R.styleable.LineChartView_bgColor, Color.WHITE);
         typedArray.recycle();
 
@@ -339,12 +338,14 @@ public class LineChartView extends View {
         anim.start();
     }
 
-    //  折线数据实体类
+    //  折线数据的实体类
     public static class ItemBean {
 
         private long Timestamp;
-
         private int value;
+
+        public ItemBean(){}
+
 
         public ItemBean(long timestamp, int value) {
             super();

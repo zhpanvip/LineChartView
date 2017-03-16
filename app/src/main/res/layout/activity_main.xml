@@ -9,9 +9,12 @@
     <com.example.zhpan.linechartview.LineChartView
         android:id="@+id/lcv"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
+        android:layout_height="200dp"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="15dp"
+        app:lineColor="#FF0000"
+        app:textColor="#ABABAB"
+        app:textSize="14dp"/>
 </LinearLayout>
