@@ -247,6 +247,19 @@ public class LineChartView extends View {
         drawText(canvas);
         //  画折线
         drawLine(canvas);
+
+        //  设置动画
+        setAnim(canvas);
+    }
+
+    private void setAnim(Canvas canvas) {
+
+        PathMeasure measure = new PathMeasure(mPath, false);
+        float pathLength = measure.getLength();
+        PathEffect effect = new DashPathEffect(new float[]{pathLength,
+                pathLength}, pathLength - pathLength * mProgress);
+        mPaintLine.setPathEffect(effect);
+        canvas.drawPath(mPath, mPaintLine);
     }
 
     private void drawLine(Canvas canvas) {
@@ -266,13 +279,6 @@ public class LineChartView extends View {
                 }
             }
         }
-        //  设置动画
-        PathMeasure measure = new PathMeasure(mPath, false);
-        float pathLength = measure.getLength();
-        PathEffect effect = new DashPathEffect(new float[]{pathLength,
-                pathLength}, pathLength - pathLength * mProgress);
-        mPaintLine.setPathEffect(effect);
-        canvas.drawPath(mPath, mPaintLine);
 
         //  渐变阴影
         Shader mShader = new LinearGradient(0, 0, 0, getHeight(), shadeColors, null, Shader.TileMode.CLAMP);

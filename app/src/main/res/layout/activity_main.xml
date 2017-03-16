@@ -16,5 +16,5 @@
         android:layout_marginTop="15dp"
         app:lineColor="#FF0000"
         app:textColor="#ABABAB"
-        app:textSize="14dp"/>
+        app:textSize="12dp"/>
 </LinearLayout>
