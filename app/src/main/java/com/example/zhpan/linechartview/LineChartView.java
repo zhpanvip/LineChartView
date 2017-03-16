@@ -1,5 +1,6 @@
 package com.example.zhpan.linechartview;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -13,6 +14,7 @@ import android.graphics.PathMeasure;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -25,12 +27,11 @@ import java.util.List;
  */
 
 public class LineChartView extends View {
-    private float xori; //  x轴原点坐标
-    private float yori;  //  y轴原点坐标
+    private float xOrigin; //  x轴原点坐标
+    private float yOrigin;  //  y轴原点坐标
     private int mMargin10;  //  10dp的间距
     private int mWidth; //  控件宽度
     private int mHeight;  //  控件高度
-    private int textWidth;  //  y轴文字的宽度
     private int max = 100, min = 0;  //  最大值、最小值
     private float yInterval;  //  y轴坐标间隔
     private float xInterval;  //  x轴坐标间隔
@@ -39,29 +40,121 @@ public class LineChartView extends View {
     private String endTime = "2017-03-24";
     private int timeWidth;  //  日期宽度
     //  折线数据
-    private List<ItemBean> mItems1;
-    private List<ItemBean> mItems2;
+    private List<ItemBean> mItems;
+    //  渐变阴影颜色
+    private int[] shadeColors;
 
     private int mAxesColor; //  坐标轴颜色
     private float mAxesWidth; //  坐标轴宽度
-    private int mTextColorX;  //  X轴字体颜色
-    private int mTextColorY;  //  Y轴字体颜色
-    private float mTextSizeX; //  X轴字体大小
-    private float mTextSizeY; //  Y轴字体大小
-    private int mLineOneColor;  //  第一条折线颜色
-    private int mLineTwoColor;  //  第二条折线颜色
+    private int mTextColor;  //  字体颜色
+    private float mTextSize; //  字体大小
+    private int mLineColor;  //  折线颜色
     private int mBgColor;       //  背景色
 
     private Paint mPaintText;     //  画文字的画笔
-    private Paint mPaintX;  //  X轴画笔
-    private Paint mPaintY;  //  Y轴画笔
-    private Paint mPaintAxes;   //  坐标轴颜色
-    private Paint mPaintLine;
-    private Path mPath;
-    private Paint mPaintShader;
-    private Path mPathShader;
-    private float mProgress;
+    private Paint mPaintAxes;   //  坐标轴画笔
+    private Paint mPaintLine;   //  折线画笔
+    private Path mPath;   //    折线路径
+    private Paint mPaintShader; //  渐变色画笔
+    private Path mPathShader;   //  渐变色路径
+    private float mProgress;    //  动画进度
 
+    public int[] getShadeColors() {
+        return shadeColors;
+    }
+
+    public void setShadeColors(int[] shadeColors) {
+        this.shadeColors = shadeColors;
+    }
+
+    public int getMax() {
+        return max;
+    }
+
+    public void setMax(int max) {
+        this.max = max;
+    }
+
+    public int getMin() {
+        return min;
+    }
+
+    public void setMin(int min) {
+        this.min = min;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
+    public List<ItemBean> getItems() {
+        return mItems;
+    }
+
+    public void setItems(List<ItemBean> items) {
+        mItems = items;
+    }
+
+    public int getAxesColor() {
+        return mAxesColor;
+    }
+
+    public void setAxesColor(int axesColor) {
+        mAxesColor = axesColor;
+    }
+
+    public float getAxesWidth() {
+        return mAxesWidth;
+    }
+
+    public void setAxesWidth(float axesWidth) {
+        mAxesWidth = axesWidth;
+    }
+
+    public int getTextColor() {
+        return mTextColor;
+    }
+
+    public void setTextColor(int textColor) {
+        mTextColor = textColor;
+    }
+
+    public float getTextSize() {
+        return mTextSize;
+    }
+
+    public void setTextSize(float textSize) {
+        mTextSize = textSize;
+    }
+
+
+    public int getLineColor() {
+        return mLineColor;
+    }
+
+    public void setLineColor(int lineColor) {
+        mLineColor = lineColor;
+    }
+
+    public int getBgColor() {
+        return mBgColor;
+    }
+
+    public void setBgColor(int bgColor) {
+        mBgColor = bgColor;
+    }
 
     public LineChartView(Context context) {
         super(context);
@@ -76,34 +169,22 @@ public class LineChartView extends View {
 
     public LineChartView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.LineChart);
-        mAxesColor = typedArray.getColor(R.styleable.LineChart_axesColor, Color.parseColor("#CCCCCC"));
-        mAxesWidth = typedArray.getDimension(R.styleable.LineChart_axesWidth, 1);
-        mTextColorX = typedArray.getColor(R.styleable.LineChart_textColorX, Color.parseColor("#ABABAB"));
-        mTextColorY = typedArray.getColor(R.styleable.LineChart_textColorY, Color.parseColor("#ABABAB"));
-        mTextSizeX = typedArray.getDimension(R.styleable.LineChart_textSizeX, 14);
-        mTextSizeY = typedArray.getDimension(R.styleable.LineChart_textSizeY, 32);
-        mLineOneColor = typedArray.getColor(R.styleable.LineChart_lineOneColor, Color.RED);
-        mLineTwoColor = typedArray.getColor(R.styleable.LineChart_lineTwoColor, Color.BLUE);
-        mBgColor = typedArray.getColor(R.styleable.LineChart_bgColor, Color.WHITE);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.LineChartView);
+        mAxesColor = typedArray.getColor(R.styleable.LineChartView_axesColor, Color.parseColor("#CCCCCC"));
+        mAxesWidth = typedArray.getDimension(R.styleable.LineChartView_axesWidth, 1);
+        mTextColor = typedArray.getColor(R.styleable.LineChartView_textColorX, Color.parseColor("#ABABAB"));
+        mTextSize = typedArray.getDimension(R.styleable.LineChartView_textSizeX, 32);
+        mLineColor = typedArray.getColor(R.styleable.LineChartView_lineOneColor, Color.RED);
+        mBgColor = typedArray.getColor(R.styleable.LineChartView_bgColor, Color.WHITE);
         typedArray.recycle();
+
+        //  初始化渐变色
+        shadeColors = new int[]{
+                Color.argb(100, 255, 86, 86), Color.argb(15, 255, 86, 86),
+                Color.argb(0, 255, 86, 86)};
         //  初始化折线数据
-        mItems1 = new ArrayList<>();
-        mItems2 = new ArrayList<>();
-
-        mItems1.add(new ItemBean(1489507200, 23));
-        mItems1.add(new ItemBean(1489593600, 88));
-        mItems1.add(new ItemBean(1489680000, 60));
-        mItems1.add(new ItemBean(1489766400, 50));
-        mItems1.add(new ItemBean(1489852800, 70));
-        mItems1.add(new ItemBean(1489939200, 10));
-        mItems1.add(new ItemBean(1490025600, 33));
-        mItems1.add(new ItemBean(1490112000, 44));
-        mItems1.add(new ItemBean(1490198400, 99));
-        mItems1.add(new ItemBean(1490284800, 17));
-
+        mItems = new ArrayList<>();
         mMargin10 = ScreenUtils.dp2px(context, 10);
-
         init();
     }
 
@@ -117,8 +198,8 @@ public class LineChartView extends View {
         mPaintText = new Paint();
         mPaintText.setStyle(Paint.Style.FILL);
         mPaintText.setAntiAlias(true); //抗锯齿
-        mPaintText.setTextSize(mTextSizeX);
-        mPaintText.setColor(mTextColorX);
+        mPaintText.setTextSize(mTextSize);
+        mPaintText.setColor(mTextColor);
         mPaintText.setTextAlign(Paint.Align.LEFT);
 
         //  初始化折线的画笔
@@ -126,7 +207,7 @@ public class LineChartView extends View {
         mPaintLine.setStyle(Paint.Style.STROKE);
         mPaintLine.setAntiAlias(true);
         mPaintLine.setStrokeWidth(mAxesWidth / 2);
-        mPaintLine.setColor(mLineOneColor);
+        mPaintLine.setColor(mLineColor);
 
         //  初始化折线路径
         mPath = new Path();
@@ -136,14 +217,6 @@ public class LineChartView extends View {
         mPaintShader = new Paint();
         mPaintShader.setAntiAlias(true);
         mPaintShader.setStrokeWidth(2f);
-
-
-        mPaintX = new Paint();
-        mPaintX.setColor(mTextColorX);
-        mPaintX.setTextSize(mTextSizeX);
-        mPaintY = new Paint();
-        mPaintY.setColor(mTextColorY);
-        mPaintY.setTextSize(mTextSizeY);
     }
 
     @Override
@@ -153,11 +226,10 @@ public class LineChartView extends View {
 
             mWidth = getWidth();
             mHeight = getHeight();
-            textWidth = (int) mPaintY.measureText("-00.00%");
-            timeWidth = (int) mPaintX.measureText(startTime);
+            timeWidth = (int) mPaintText.measureText(startTime);
             //  初始化原点坐标
-            xori = 0 + mMargin10;
-            yori = (mHeight - mTextSizeY - mMargin10);
+            xOrigin = 0 + mMargin10;
+            yOrigin = (mHeight - mTextSize - mMargin10);
 
             //  设置背景色
             setBackgroundColor(mBgColor);
@@ -168,8 +240,8 @@ public class LineChartView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         //  Y轴间距
-        yInterval = (max - min) / (yori - mMargin10);
-        xInterval = (mWidth - xori) / (mItems1.size() - 1);
+        yInterval = (max - min) / (yOrigin - mMargin10);
+        xInterval = (mWidth - xOrigin) / (mItems.size() - 1);
         //  画坐标轴
         drawAxes(canvas);
         //  画文字
@@ -180,17 +252,17 @@ public class LineChartView extends View {
 
     private void drawLine(Canvas canvas) {
         //  画坐标点
-        for (int i = 0; i < mItems1.size(); i++) {
-            float x = i * xInterval + xori + mAxesWidth;
+        for (int i = 0; i < mItems.size(); i++) {
+            float x = i * xInterval + xOrigin + mAxesWidth;
             if (i == 0) {
-                mPathShader.moveTo(x, yori - (mItems1.get(i).getValue() - min) / yInterval);
-                mPath.moveTo(x, yori - (mItems1.get(i).getValue() - min) / yInterval);
+                mPathShader.moveTo(x, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
+                mPath.moveTo(x, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
             } else {
-                mPath.lineTo(x - mMargin10 - mAxesWidth, yori - (mItems1.get(i).getValue() - min) / yInterval);
-                mPathShader.lineTo(x - mMargin10 - mAxesWidth, yori - (mItems1.get(i).getValue() - min) / yInterval);
-                if (i == mItems1.size() - 1) {
-                    mPathShader.lineTo(x - mMargin10 - mAxesWidth, yori);
-                    mPathShader.lineTo(xori, yori);
+                mPath.lineTo(x - mMargin10 - mAxesWidth, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
+                mPathShader.lineTo(x - mMargin10 - mAxesWidth, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
+                if (i == mItems.size() - 1) {
+                    mPathShader.lineTo(x - mMargin10 - mAxesWidth, yOrigin);
+                    mPathShader.lineTo(xOrigin, yOrigin);
                     mPathShader.close();
                 }
             }
@@ -204,43 +276,70 @@ public class LineChartView extends View {
         canvas.drawPath(mPath, mPaintLine);
 
         //  渐变阴影
-        Shader mShader = new LinearGradient(0, 0, 0, getHeight(), new int[]{
-                Color.argb(100, 255, 86, 86), Color.argb(15, 255, 86, 86),
-                Color.argb(0, 255, 86, 86)}, null, Shader.TileMode.CLAMP);
+        Shader mShader = new LinearGradient(0, 0, 0, getHeight(), shadeColors, null, Shader.TileMode.CLAMP);
         mPaintShader.setShader(mShader);
 
-        //  画渐变阴影
+        //  绘制渐变阴影
         canvas.drawPath(mPathShader, mPaintShader);
     }
 
     private void drawText(Canvas canvas) {
-        //  最大值
-        canvas.drawText(String.format("%.2f", max * 100 / 100.0) + "%", xori + 6, 3 * mMargin10 + 6, mPaintText);
-        //  最小值
-        canvas.drawText(String.format("%.2f", min * 100 / 100.0) + "%", xori + 6, yori - 6, mPaintText);
-        //  中间值
-        canvas.drawText((String.format("%.2f", (min + max) * 100 / 200.0) + "%"), xori + 6, yori / 2 + 5, mPaintText);
+        //  绘制最大值
+        canvas.drawText(String.format("%.2f", max * 100 / 100.0) + "%", xOrigin + 6, 2 * mMargin10, mPaintText);
+        //  绘制最小值
+        canvas.drawText(String.format("%.2f", min * 100 / 100.0) + "%", xOrigin + 6, yOrigin - 6, mPaintText);
+        //  绘制中间值
+        canvas.drawText((String.format("%.2f", (min + max) * 100 / 200.0) + "%"), xOrigin + 6, (yOrigin + mMargin10) / 2, mPaintText);
 
-        //  开始日期
-        canvas.drawText(startTime, xori, mHeight - 2 * mMargin10, mPaintText);
-        //  结束日期
-        canvas.drawText(endTime, mWidth - timeWidth - mMargin10, mHeight - 2 * mMargin10, mPaintText);
+        //  绘制开始日期
+        canvas.drawText(startTime, xOrigin, mHeight - mMargin10, mPaintText);
+        //  绘制结束日期
+        canvas.drawText(endTime, mWidth - timeWidth - mMargin10, mHeight - mMargin10, mPaintText);
     }
 
     //  画坐标轴
     private void drawAxes(Canvas canvas) {
-        //  X轴
-        canvas.drawLine(xori, yori, mWidth - mMargin10, yori, mPaintAxes);
-        //  X中轴线
-        canvas.drawLine(xori, yori / 2, mWidth - mMargin10, yori / 2, mPaintAxes);
-        //  X上边线
-        canvas.drawLine(xori, mMargin10, mWidth - mMargin10, mMargin10, mPaintAxes);
-        //  画Y轴
-        canvas.drawLine(xori, yori, xori, mMargin10, mPaintAxes);
-        //  Y右边线
-        canvas.drawLine(mWidth - mMargin10, mMargin10, mWidth - mMargin10, yori, mPaintAxes);
+        //  绘制X轴
+        canvas.drawLine(xOrigin, yOrigin, mWidth - mMargin10, yOrigin, mPaintAxes);
+        //  绘制X中轴线
+        canvas.drawLine(xOrigin, yOrigin / 2, mWidth - mMargin10, yOrigin / 2, mPaintAxes);
+        //  绘制X上边线
+        canvas.drawLine(xOrigin, mMargin10, mWidth - mMargin10, mMargin10, mPaintAxes);
+        //  绘制画Y轴
+        canvas.drawLine(xOrigin, yOrigin, xOrigin, mMargin10, mPaintAxes);
+        //  绘制Y右边线
+        canvas.drawLine(mWidth - mMargin10, mMargin10, mWidth - mMargin10, yOrigin, mPaintAxes);
     }
 
+
+    public static String timeStampToString(Long num) {
+        Timestamp ts = new Timestamp(num * 1000);
+        DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(ts);
+    }
+
+    //  计算动画进度
+    public void setPercentage(float percentage) {
+        if (percentage < 0.0f || percentage > 1.0f) {
+            throw new IllegalArgumentException(
+                    "setPercentage not between 0.0f and 1.0f");
+        }
+        mProgress = percentage;
+        invalidate();
+    }
+
+    /**
+     * @param lineChartView
+     * @param duration      动画持续时间
+     */
+    public void startAnim(LineChartView lineChartView, long duration) {
+        ObjectAnimator anim = ObjectAnimator.ofFloat(lineChartView, "percentage", 0.0f, 1.0f);
+        anim.setDuration(duration);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.start();
+    }
+
+    //  折线数据实体类
     public static class ItemBean {
 
         private long Timestamp;
@@ -269,22 +368,5 @@ public class LineChartView extends View {
             this.value = value;
         }
 
-    }
-
-
-    public static String timeStampToString(Long num) {
-        Timestamp ts = new Timestamp(num * 1000);
-        DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(ts);
-    }
-
-    public void setPercentage(float percentage) {
-        if (percentage < 0.0f || percentage > 1.0f) {
-            throw new IllegalArgumentException(
-                    "setPercentage not between 0.0f and 1.0f");
-        }
-
-        mProgress = percentage;
-        invalidate();
     }
 }
