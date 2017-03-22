@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by zhpan on 2017/3/14.
@@ -227,7 +228,7 @@ public class LineChartView extends View {
             mHeight = getHeight();
             timeWidth = (int) mPaintText.measureText(startTime);
             //  初始化原点坐标
-            xOrigin = 0 + mMargin10;
+            xOrigin = mMargin10;
             yOrigin = (mHeight - mTextSize - mMargin10);
 
             //  设置背景色
@@ -289,12 +290,16 @@ public class LineChartView extends View {
     }
 
     private void drawText(Canvas canvas) {
+
         //  绘制最大值
-        canvas.drawText(String.format("%.2f", max * 100 / 100.0) + "%", xOrigin + 6, 2 * mMargin10, mPaintText);
+        String maxValue=String.format(Locale.getDefault(),"%.2f", max * 100 / 100.0) + "%";
+        canvas.drawText(maxValue, xOrigin + 6, 2 * mMargin10, mPaintText);
         //  绘制最小值
-        canvas.drawText(String.format("%.2f", min * 100 / 100.0) + "%", xOrigin + 6, yOrigin - 6, mPaintText);
+        String minValue=String.format(Locale.getDefault(),"%.2f", min * 100 / 100.0) + "%";
+        canvas.drawText(minValue, xOrigin + 6, yOrigin - 6, mPaintText);
         //  绘制中间值
-        canvas.drawText((String.format("%.2f", (min + max) * 100 / 200.0) + "%"), xOrigin + 6, (yOrigin + mMargin10) / 2, mPaintText);
+        String midValue=String.format(Locale.getDefault(),"%.2f", (min + max) * 100 / 200.0) + "%";
+        canvas.drawText(midValue, xOrigin + 6, (yOrigin + mMargin10) / 2, mPaintText);
 
         //  绘制开始日期
         canvas.drawText(startTime, xOrigin, mHeight - mMargin10, mPaintText);
