@@ -1,5 +1,5 @@
 首先看下要实现的效果图，动态图片录制效果不好，渐变颜色没有完全显示出来，以至于下半部分渐变色变成了白色。
-![这里写图片描述](http://img.blog.csdn.net/20170316135432050?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMjA1MjE1NzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+![image](http://img.blog.csdn.net/20170316135432050?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMjA1MjE1NzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 折线图的绘制主要有一下几个步骤。
 一、定义LineChartView类并继承View。
 二、添加自定义属性。以在value目录下创建attrs.xml文件,文件中我们可以定义一些用到的属性，比如折线颜色、字体大小等属性。文件内容如下：
