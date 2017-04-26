@@ -313,5 +313,4 @@ private void initData() {
         mLineChartView.startAnim(mLineChartView,2000);
     }
 ```
-[项目链接：https://github.com/zhpanvip/LineChartView](https://github.com/zhpanvip/LineChartView)
 
