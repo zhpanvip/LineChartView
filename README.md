@@ -1,5 +1,5 @@
-效果图，动态图片录制效果不好，凑合看吧。
-![image](http://img.blog.csdn.net/20170316135432050?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMjA1MjE1NzM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+带动画效果的颜色渐变折线图
+
 如何使用LineChartView
 1.在布局文件中添加LineChartView,可设置折线颜色、字体颜色、等属性，如下：
 
