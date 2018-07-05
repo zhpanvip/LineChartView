@@ -1,5 +1,7 @@
 带动画效果的颜色渐变折线图
 
+![这里写图片描述](https://github.com/zhpanvip/LineChartView/blob/master/image/ezgif-5-47fee30472.gif)
+
 如何使用LineChartView
 
 1.在布局文件中添加LineChartView,可设置折线颜色、字体颜色、等属性，如下：
