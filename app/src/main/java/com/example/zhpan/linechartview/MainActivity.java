@@ -3,6 +3,8 @@ package com.example.zhpan.linechartview;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
         mLineChartView.setItems(mItems);
         //  设置渐变颜色
         mLineChartView.setShadeColors(shadeColors);
+        //  开启动画
+        mLineChartView.startAnim(mLineChartView,2000);
+    }
+
+    public void onClick(View view){
         //  开启动画
         mLineChartView.startAnim(mLineChartView,2000);
     }

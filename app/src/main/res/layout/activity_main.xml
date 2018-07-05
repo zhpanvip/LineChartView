@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent">
 
     <com.example.zhpan.linechartview.LineChartView
@@ -17,4 +18,11 @@
         app:lineColor="#FF0000"
         app:textColor="#ABABAB"
         app:textSize="12dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Start Animation"
+        android:onClick="onClick"
+        android:layout_height="wrap_content" />
 </LinearLayout>
