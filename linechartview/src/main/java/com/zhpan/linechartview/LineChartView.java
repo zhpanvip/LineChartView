@@ -1,4 +1,4 @@
-package com.example.zhpan.linechartview;
+package com.zhpan.linechartview;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -12,13 +12,12 @@ import android.graphics.Path;
 import android.graphics.PathEffect;
 import android.graphics.PathMeasure;
 import android.graphics.Shader;
+import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -41,17 +40,13 @@ public class LineChartView extends View {
     private String endTime = "2017-03-24";
     private int timeWidth;  //  日期宽度
 
-    private List<ItemBean> mItems;//  折线数据
-
-    private int[] shadeColors; //  渐变阴影颜色
-
+    private List<Float> mValues;//  折线数据
+    private int[] mShadeColors;
     private int mAxesColor; //  坐标轴颜色
     private float mAxesWidth; //  坐标轴宽度
     private int mTextColor;  //  字体颜色
     private float mTextSize; //  字体大小
     private int mLineColor;  //  折线颜色
-    private int mBgColor;       //  背景色
-
     private Paint mPaintText;     //  画文字的画笔
     private Paint mPaintAxes;   //  坐标轴画笔
     private Paint mPaintLine;   //  折线画笔
@@ -59,112 +54,14 @@ public class LineChartView extends View {
     private Paint mPaintShader; //  渐变色画笔
     private Path mPathShader;   //  渐变色路径
     private float mProgress;    //  动画进度
-
-    public int[] getShadeColors() {
-        return shadeColors;
-    }
-
-    public void setShadeColors(int[] shadeColors) {
-        this.shadeColors = shadeColors;
-    }
-
-    public int getMax() {
-        return max;
-    }
-
-    public void setMax(int max) {
-        this.max = max;
-    }
-
-    public int getMin() {
-        return min;
-    }
-
-    public void setMin(int min) {
-        this.min = min;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public List<ItemBean> getItems() {
-        return mItems;
-    }
-
-    public void setItems(List<ItemBean> items) {
-        mItems = items;
-    }
-
-    public int getAxesColor() {
-        return mAxesColor;
-    }
-
-    public void setAxesColor(int axesColor) {
-        mAxesColor = axesColor;
-    }
-
-    public float getAxesWidth() {
-        return mAxesWidth;
-    }
-
-    public void setAxesWidth(float axesWidth) {
-        mAxesWidth = axesWidth;
-    }
-
-    public int getTextColor() {
-        return mTextColor;
-    }
-
-    public void setTextColor(int textColor) {
-        mTextColor = textColor;
-    }
-
-    public float getTextSize() {
-        return mTextSize;
-    }
-
-    public void setTextSize(float textSize) {
-        mTextSize = textSize;
-    }
-
-
-    public int getLineColor() {
-        return mLineColor;
-    }
-
-    public void setLineColor(int lineColor) {
-        mLineColor = lineColor;
-    }
-
-    public int getBgColor() {
-        return mBgColor;
-    }
-
-    public void setBgColor(int bgColor) {
-        mBgColor = bgColor;
-    }
+    private Interpolator interpolator;
 
     public LineChartView(Context context) {
-        super(context);
-        init();
+        this(context, null);
     }
 
     public LineChartView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-        init();
     }
 
     public LineChartView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -175,21 +72,16 @@ public class LineChartView extends View {
         mTextColor = typedArray.getColor(R.styleable.LineChartView_textColor, Color.parseColor("#ABABAB"));
         mTextSize = typedArray.getDimension(R.styleable.LineChartView_textSize, 32);
         mLineColor = typedArray.getColor(R.styleable.LineChartView_lineColor, Color.RED);
-        mBgColor = typedArray.getColor(R.styleable.LineChartView_bgColor, Color.WHITE);
         typedArray.recycle();
-
-        //  初始化渐变色
-        shadeColors = new int[]{
-                Color.argb(100, 255, 86, 86), Color.argb(15, 255, 86, 86),
-                Color.argb(0, 255, 86, 86)};
         //  初始化折线数据
-        mItems = new ArrayList<>();
-        mMargin10 = ScreenUtils.dp2px(context, 10);
+        mValues = new ArrayList<>();
+        mMargin10 = DensityUtils.dp2px(context, 10);
         init();
     }
 
     private void init() {
         //  初始化坐标轴画笔
+        interpolator = new LinearInterpolator();
         mPaintAxes = new Paint();
         mPaintAxes.setColor(mAxesColor);
         mPaintAxes.setStrokeWidth(mAxesWidth);
@@ -206,7 +98,7 @@ public class LineChartView extends View {
         mPaintLine = new Paint();
         mPaintLine.setStyle(Paint.Style.STROKE);
         mPaintLine.setAntiAlias(true);
-        mPaintLine.setStrokeWidth(mAxesWidth / 2);
+        mPaintLine.setStrokeWidth(mAxesWidth);
         mPaintLine.setColor(mLineColor);
 
         //  初始化折线路径
@@ -223,16 +115,12 @@ public class LineChartView extends View {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         if (changed) {
-
             mWidth = getWidth();
             mHeight = getHeight();
             timeWidth = (int) mPaintText.measureText(startTime);
             //  初始化原点坐标
             xOrigin = mMargin10;
             yOrigin = (mHeight - mTextSize - mMargin10);
-
-            //  设置背景色
-            setBackgroundColor(mBgColor);
         }
     }
 
@@ -241,20 +129,18 @@ public class LineChartView extends View {
         super.onDraw(canvas);
         //  Y轴间距
         yInterval = (max - min) / (yOrigin - mMargin10);
-        xInterval = (mWidth - xOrigin) / (mItems.size() - 1);
+        xInterval = (mWidth - xOrigin) / (mValues.size() - 1);
         //  画坐标轴
         drawAxes(canvas);
         //  画文字
         drawText(canvas);
         //  画折线
         drawLine(canvas);
-
         //  设置动画
         setAnim(canvas);
     }
 
     private void setAnim(Canvas canvas) {
-
         PathMeasure measure = new PathMeasure(mPath, false);
         float pathLength = measure.getLength();
         PathEffect effect = new DashPathEffect(new float[]{pathLength,
@@ -265,42 +151,40 @@ public class LineChartView extends View {
 
     private void drawLine(Canvas canvas) {
         //  画坐标点
-        for (int i = 0; i < mItems.size(); i++) {
+        for (int i = 0; i < mValues.size(); i++) {
             float x = i * xInterval + xOrigin + mAxesWidth;
             if (i == 0) {
-                mPathShader.moveTo(x, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
-                mPath.moveTo(x, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
+                mPathShader.moveTo(x, yOrigin - (mValues.get(i) - min) / yInterval);
+                mPath.moveTo(x, yOrigin - (mValues.get(i) - min) / yInterval);
             } else {
-                mPath.lineTo(x - mMargin10 - mAxesWidth, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
-                mPathShader.lineTo(x - mMargin10 - mAxesWidth, yOrigin - (mItems.get(i).getValue() - min) / yInterval);
-                if (i == mItems.size() - 1) {
+                mPath.lineTo(x - mMargin10 - mAxesWidth, yOrigin - (mValues.get(i) - min) / yInterval);
+                mPathShader.lineTo(x - mMargin10 - mAxesWidth, yOrigin - (mValues.get(i) - min) / yInterval);
+                if (i == mValues.size() - 1) {
                     mPathShader.lineTo(x - mMargin10 - mAxesWidth, yOrigin);
                     mPathShader.lineTo(xOrigin, yOrigin);
                     mPathShader.close();
                 }
             }
         }
-
-        //  渐变阴影
-        Shader mShader = new LinearGradient(0, 0, 0, getHeight(), shadeColors, null, Shader.TileMode.CLAMP);
-        mPaintShader.setShader(mShader);
-
-        //  绘制渐变阴影
+        if (null == mShadeColors) {
+            mPaintShader.setColor(Color.argb(0, 0, 0, 0));
+        } else {
+            Shader mShader = new LinearGradient(0, 0, 0, getHeight(), mShadeColors, null, Shader.TileMode.CLAMP);
+            mPaintShader.setShader(mShader);
+        }
         canvas.drawPath(mPathShader, mPaintShader);
     }
 
     private void drawText(Canvas canvas) {
-
         //  绘制最大值
-        String maxValue=String.format(Locale.getDefault(),"%.2f", max * 100 / 100.0) + "%";
+        String maxValue = String.format(Locale.getDefault(), "%.2f", max * 100 / 100.0) + "%";
         canvas.drawText(maxValue, xOrigin + 6, 2 * mMargin10, mPaintText);
         //  绘制最小值
-        String minValue=String.format(Locale.getDefault(),"%.2f", min * 100 / 100.0) + "%";
+        String minValue = String.format(Locale.getDefault(), "%.2f", min * 100 / 100.0) + "%";
         canvas.drawText(minValue, xOrigin + 6, yOrigin - 6, mPaintText);
         //  绘制中间值
-        String midValue=String.format(Locale.getDefault(),"%.2f", (min + max) * 100 / 200.0) + "%";
+        String midValue = String.format(Locale.getDefault(), "%.2f", (min + max) * 100 / 200.0) + "%";
         canvas.drawText(midValue, xOrigin + 6, (yOrigin + mMargin10) / 2, mPaintText);
-
         //  绘制开始日期
         canvas.drawText(startTime, xOrigin, mHeight - mMargin10, mPaintText);
         //  绘制结束日期
@@ -321,14 +205,7 @@ public class LineChartView extends View {
         canvas.drawLine(mWidth - mMargin10, mMargin10, mWidth - mMargin10, yOrigin, mPaintAxes);
     }
 
-
-    public static String timeStampToString(Long num) {
-        Timestamp ts = new Timestamp(num * 1000);
-        DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(ts);
-    }
-
-    //  计算动画进度
+    //  属性动画的set方法
     public void setPercentage(float percentage) {
         if (percentage < 0.0f || percentage > 1.0f) {
             throw new IllegalArgumentException(
@@ -339,46 +216,67 @@ public class LineChartView extends View {
     }
 
     /**
-     * @param lineChartView
-     * @param duration      动画持续时间
+     * @param duration 动画持续时间
      */
-    public void startAnim(LineChartView lineChartView, long duration) {
-        ObjectAnimator anim = ObjectAnimator.ofFloat(lineChartView, "percentage", 0.0f, 1.0f);
+    public void startAnim(long duration) {
+        ObjectAnimator anim = ObjectAnimator.ofFloat(this, "percentage", 0.0f, 1.0f);
         anim.setDuration(duration);
-        anim.setInterpolator(new LinearInterpolator());
+        anim.setInterpolator(interpolator);
         anim.start();
     }
 
-    //  折线数据的实体类
-    public static class ItemBean {
+    public void setInterpolator(Interpolator interpolator) {
+        this.interpolator = interpolator;
+    }
 
-        private long Timestamp;
-        private int value;
-
-        public ItemBean(){}
-
-
-        public ItemBean(long timestamp, int value) {
-            super();
-            Timestamp = timestamp;
-            this.value = value;
+    public void setShadeColors(@ColorInt List<Integer> shadeColors) {
+        mShadeColors = new int[shadeColors.size()];
+        for (int i = 0; i < shadeColors.size(); i++) {
+            mShadeColors[i] = shadeColors.get(i);
         }
+    }
 
-        public long getTimestamp() {
-            return Timestamp;
-        }
+    public void setMax(int max) {
+        this.max = max;
+    }
 
-        public void setTimestamp(long timestamp) {
-            Timestamp = timestamp;
-        }
+    public void setMin(int min) {
+        this.min = min;
+    }
 
-        public int getValue() {
-            return value;
-        }
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
 
-        public void setValue(int value) {
-            this.value = value;
-        }
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
 
+    public List<Float> getValues() {
+        return mValues;
+    }
+
+    public void setValues(List<Float> listValues) {
+        mValues = listValues;
+    }
+
+    public void setAxesColor(int axesColor) {
+        mAxesColor = axesColor;
+    }
+
+    public void setAxesWidth(float axesWidth) {
+        mAxesWidth = axesWidth;
+    }
+
+    public void setTextColor(int textColor) {
+        mTextColor = textColor;
+    }
+
+    public void setTextSize(float textSize) {
+        mTextSize = textSize;
+    }
+
+    public void setLineColor(int lineColor) {
+        mLineColor = lineColor;
     }
 }

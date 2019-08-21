@@ -1,12 +1,10 @@
-package com.example.zhpan.linechartview;
+package com.zhpan.linechartview;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
 
-/**
- * ScreenUtils
- */
-public class ScreenUtils {
+
+public class DensityUtils {
     private static int screenW;
     private static int screenH;
     private static float screenDensity;
