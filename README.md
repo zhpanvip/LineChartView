@@ -25,28 +25,30 @@
 ```
 private void initData() {
         //  初始化折线数据
-        mItems = new ArrayList<>();
-        mItems.add(new LineChartView.ItemBean(1489507200, 23));
-        mItems.add(new LineChartView.ItemBean(1489593600, 88));
-        mItems.add(new LineChartView.ItemBean(1489680000, 60));
-        mItems.add(new LineChartView.ItemBean(1489766400, 50));
-        mItems.add(new LineChartView.ItemBean(1489852800, 70));
-        mItems.add(new LineChartView.ItemBean(1489939200, 10));
-        mItems.add(new LineChartView.ItemBean(1490025600, 33));
-        mItems.add(new LineChartView.ItemBean(1490112000, 44));
-        mItems.add(new LineChartView.ItemBean(1490198400, 99));
-        mItems.add(new LineChartView.ItemBean(1490284800, 17));
-
-        shadeColors= new int[]{
-                Color.argb(100, 255, 86, 86), Color.argb(15, 255, 86, 86),
-                Color.argb(0, 255, 86, 86)};
-
+        List<Float> listValues = new ArrayList<>();
+        Random random = new Random();
+        float startValue = random.nextFloat() * 10;
+        listValues.add(startValue);
+        for (int i = 0; i < 30; i++) {
+            startValue += random.nextFloat() * 10 - 5;
+            listValues.add(startValue);
+        }
+        List<Integer> listShadeColors = new ArrayList<>();
+        listShadeColors.add(Color.argb(100, 255, 86, 86));
+        listShadeColors.add(Color.argb(15, 255, 86, 86));
+        listShadeColors.add(Color.argb(0, 255, 86, 86));
         //  设置折线数据
-        mLineChartView.setItems(mItems);
+        mLineChartView.setValues(listValues);
         //  设置渐变颜色
-        mLineChartView.setShadeColors(shadeColors);
+        mLineChartView.setShadeColors(listShadeColors);
+        //  设置动画插值器
+        mLineChartView.setInterpolator(new DecelerateInterpolator());
+        mLineChartView.setAxisMinValue(-30);
+        mLineChartView.setAxisMaxValue(30);
+        mLineChartView.setStartTime("2017-03-15");
+        mLineChartView.setEndTime("2017-04-14");
         //  开启动画
-        mLineChartView.startAnim(mLineChartView,2000);
+        mLineChartView.startAnim(2500);
     }
 ```
 详情请参看：http://blog.csdn.net/qq_20521573/article/details/62421993
