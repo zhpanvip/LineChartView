@@ -27,8 +27,11 @@ public class MainActivity extends AppCompatActivity {
         //  初始化折线数据
         List<Float> listValues = new ArrayList<>();
         Random random = new Random();
+        float startValue = random.nextFloat() * 10;
+        listValues.add(startValue);
         for (int i = 0; i < 30; i++) {
-            listValues.add(random.nextFloat() * 100);
+            startValue += random.nextFloat() * 10 - 5;
+            listValues.add(startValue);
         }
         List<Integer> listShadeColors = new ArrayList<>();
         listShadeColors.add(Color.argb(100, 255, 86, 86));
@@ -40,11 +43,15 @@ public class MainActivity extends AppCompatActivity {
         mLineChartView.setShadeColors(listShadeColors);
         //  设置动画插值器
         mLineChartView.setInterpolator(new DecelerateInterpolator());
+        mLineChartView.setAxisMinValue(-30);
+        mLineChartView.setAxisMaxValue(30);
+        mLineChartView.setStartTime("2017-03-15");
+        mLineChartView.setEndTime("2017-04-14");
         //  开启动画
         mLineChartView.startAnim(2500);
     }
 
-    public void onClick(View view){
+    public void onClick(View view) {
         //  开启动画
         mLineChartView.startAnim(2000);
     }
